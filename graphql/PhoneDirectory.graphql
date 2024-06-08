@@ -1,0 +1,40 @@
+extend type Query @guard {
+    phones: [PhoneDirectory]
+        @paginate(defaultCount: 10)
+        @orderBy(column: "created_at", direction: DESC)
+
+    phone(phone_number: String! @eq): PhoneDirectory @find
+
+    search(search_query: String!): [PhoneDirectory]
+        @field(resolver: "PhoneDirectoryQuery")
+}
+
+extend type Mutation @guard {
+    createPhoneDirectory(
+        name: String!
+        phone_number: String! @rules(apply: ["unique:phone_directories"])
+    ): PhoneDirectory @create
+
+    updatePhoneDirectoryByID(
+        id: ID!
+        name: String
+        phone_number: String @rules(apply: ["unique:phone_directories"])
+    ): PhoneDirectory @update
+
+    updatePhoneDirectoryByPhoneNumber(
+        phone_number: String!
+        new_phone_number: String @rules(apply: ["unique:phone_directories"])
+        name: String
+    ): PhoneDirectory
+        @field(resolver: "PhoneDirectoryMutation@updateByPhoneNumber")
+
+    deletePhoneDirectory(id: ID! @whereKey): PhoneDirectory @delete
+}
+
+type PhoneDirectory {
+    id: ID!
+    name: String!
+    phone_number: String!
+    created_at: String!
+    updated_at: String!
+}
